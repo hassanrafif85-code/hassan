@@ -1,151 +1,130 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game Buat Minuman</title>
+<title>Game Menangkap Ikan</title>
 <style>
   body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
     margin: 0;
-  }
-
-  h1 {
-    color: #fff;
-    text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-  }
-
-  #game-container {
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    width: 320px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    text-align: center;
-  }
-
-  .ingredients {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 15px;
-  }
-
-  .ingredient {
-    background-color: #eee;
-    border-radius: 8px;
-    padding: 10px 15px;
-    margin: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  .ingredient:hover {
-    background-color: #cde;
-  }
-
-  #selected {
-    margin-top: 10px;
-    font-weight: bold;
-    color: #333;
-  }
-
-  button {
-    background: #74ebd5;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #00aaff, #004466);
+    font-family: sans-serif;
     color: white;
-    cursor: pointer;
-    font-size: 1em;
-    margin-top: 15px;
-    transition: background 0.3s;
   }
 
-  button:hover {
-    background: #4aa9b4;
+  #gameArea {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  #result {
-    margin-top: 10px;
+  .ikan {
+    position: absolute;
+    width: 60px;
+    height: 40px;
+    background: orange;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  }
+
+  .ikan::before {
+    content: "";
+    position: absolute;
+    right: -15px;
+    top: 10px;
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 15px solid orange;
+  }
+
+  #jaring {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  #score {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 24px;
     font-weight: bold;
-    color: #222;
   }
 </style>
 </head>
 <body>
-  <h1>☕ Game Buat Minuman 🍹</h1>
-  <div id="game-container">
-    <p id="order">Pesanan: ...</p>
-    <div class="ingredients">
-      <div class="ingredient">Air</div>
-      <div class="ingredient">Es</div>
-      <div class="ingredient">Jeruk</div>
-      <div class="ingredient">Susu</div>
-      <div class="ingredient">Kopi</div>
-      <div class="ingredient">Teh</div>
-      <div class="ingredient">Gula</div>
-    </div>
-    <p id="selected">Bahan yang dipilih: <span id="chosen">-</span></p>
-    <button id="buatBtn">Buat Minuman!</button>
-    <p id="result"></p>
+  <div id="gameArea">
+    <div id="score">Skor: 0</div>
+    <div id="jaring"></div>
   </div>
 
 <script>
-  const orders = [
-    { name: "Jus Jeruk", recipe: ["Jeruk", "Air", "Gula"] },
-    { name: "Kopi Susu", recipe: ["Kopi", "Susu", "Gula"] },
-    { name: "Es Teh", recipe: ["Teh", "Gula", "Es"] }
-  ];
+const gameArea = document.getElementById("gameArea");
+const jaring = document.getElementById("jaring");
+const scoreText = document.getElementById("score");
 
-  let currentOrder = {};
-  let selectedIngredients = [];
+let skor = 0;
+let jaringX = window.innerWidth / 2;
+const kecepatanJaring = 15;
 
-  const orderEl = document.getElementById('order');
-  const chosenEl = document.getElementById('chosen');
-  const resultEl = document.getElementById('result');
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") jaringX -= kecepatanJaring;
+  if (e.key === "ArrowRight") jaringX += kecepatanJaring;
+  jaringX = Math.max(0, Math.min(window.innerWidth - jaring.offsetWidth, jaringX));
+  jaring.style.left = jaringX + "px";
+});
 
-  function newOrder() {
-    currentOrder = orders[Math.floor(Math.random() * orders.length)];
-    orderEl.textContent = "Pesanan: " + currentOrder.name;
-    selectedIngredients = [];
-    chosenEl.textContent = "-";
-    resultEl.textContent = "";
-  }
+// Membuat ikan secara berkala
+function buatIkan() {
+  const ikan = document.createElement("div");
+  ikan.classList.add("ikan");
+  ikan.style.top = Math.random() * (window.innerHeight - 200) + "px";
+  ikan.style.left = "-60px";
+  gameArea.appendChild(ikan);
 
-  // klik bahan
-  document.querySelectorAll('.ingredient').forEach(item => {
-    item.addEventListener('click', () => {
-      const bahan = item.textContent;
-      if (!selectedIngredients.includes(bahan)) {
-        selectedIngredients.push(bahan);
-        chosenEl.textContent = selectedIngredients.join(', ');
-      }
-    });
-  });
+  let posisiX = -60;
+  const kecepatan = 2 + Math.random() * 3;
 
-  document.getElementById('buatBtn').addEventListener('click', () => {
-    const benar = currentOrder.recipe.every(bahan => selectedIngredients.includes(bahan)) &&
-                  selectedIngredients.length === currentOrder.recipe.length;
-    if (benar) {
-      resultEl.textContent = "🎉 Minuman jadi! Kamu berhasil membuat " + currentOrder.name + "!";
-      resultEl.style.color = "green";
-    } else {
-      resultEl.textContent = "😅 Hmm... rasanya aneh. Coba lagi!";
-      resultEl.style.color = "red";
+  const gerak = setInterval(() => {
+    posisiX += kecepatan;
+    ikan.style.left = posisiX + "px";
+
+    // Deteksi tangkapan
+    const ikanRect = ikan.getBoundingClientRect();
+    const jaringRect = jaring.getBoundingClientRect();
+
+    if (
+      ikanRect.bottom > jaringRect.top &&
+      ikanRect.top < jaringRect.bottom &&
+      ikanRect.left < jaringRect.right &&
+      ikanRect.right > jaringRect.left
+    ) {
+      // Tertangkap!
+      skor++;
+      scoreText.textContent = "Skor: " + skor;
+      ikan.remove();
+      clearInterval(gerak);
     }
-    setTimeout(newOrder, 3000); // ganti pesanan setelah 3 detik
-  });
 
-  // mulai game pertama kali
-  newOrder();
+    // Hilangkan jika keluar layar
+    if (posisiX > window.innerWidth) {
+      ikan.remove();
+      clearInterval(gerak);
+    }
+  }, 20);
+}
+
+// Spawner ikan
+setInterval(buatIkan, 1000);
 </script>
 </body>
-  </html>
-  
+</html>
